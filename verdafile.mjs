@@ -61,7 +61,6 @@ const Start = phony("all", async t => {
 		archiveTargets.push(SingleFamilyTtfArchive(`zip`, `TTF`, f, version));
 		archiveTargets.push(SingleFamilyTtfArchive(`zip`, `TTF-Unhinted`, f, version));
 		for (const sf of config.subfamilyOrder) {
-			archiveTargets.push(StandaloneTtfArchive(`7z`, `TTF`, f, sf, version));
 			archiveTargets.push(StandaloneTtfArchive(`7z`, `TTF-Unhinted`, f, sf, version));
 		}
 	}
@@ -80,6 +79,20 @@ const Start = phony("all", async t => {
 		packages.map(x => x.full),
 		`out/SHA-256.txt`
 	);
+});
+
+const StandaloneTtf = phony(`standalone-ttf`, async t => {
+	const [config, version] = await t.need(Config, Version);
+	await t.need(TtfFontFiles`TTF`);
+
+	let archiveTargets = [];
+	for (const f of config.familyOrder) {
+		for (const sf of config.subfamilyOrder) {
+			archiveTargets.push(StandaloneTtfArchive(`7z`, `TTF`, f, sf, version));
+		}
+	}
+
+	await t.need(archiveTargets);
 });
 
 const SuperTtc = phony(`super-ttc`, async target => {

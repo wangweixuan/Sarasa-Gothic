@@ -1,0 +1,44 @@
+name: Build font
+
+on:
+  push:
+    branches:
+      - patch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ttfautohint p7zip-full
+
+      - name: Install AFDKO
+        run: |
+          pip install --user afdko
+          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Build TTF archives
+        run: |
+          npm run build standalone-ttf
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-archives
+          path: out/*.7z
+          retention-days: 30
